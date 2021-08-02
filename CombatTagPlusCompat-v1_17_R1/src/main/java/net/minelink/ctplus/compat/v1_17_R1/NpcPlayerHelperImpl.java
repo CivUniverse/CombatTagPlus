@@ -59,6 +59,17 @@ public final class NpcPlayerHelperImpl implements NpcPlayerHelper {
         if (!(entity instanceof NpcPlayer)) {
             throw new IllegalArgumentException();
         }
+
+        for (Object o : MinecraftServer.getServer().getPlayerList().getPlayers()) {
+            if (!(o instanceof EntityPlayer) || o instanceof NpcPlayer) continue;
+
+            PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.e, entity);
+            ((EntityPlayer) o).b.sendPacket(packet);
+        }
+
+        WorldServer worldServer = MinecraftServer.getServer().getWorldServer(entity.getWorld().getDimensionKey());
+        worldServer.getChunkProvider().removeEntity(entity);
+        worldServer.getPlayers().remove(entity);
         removePlayerList(player);
     }
 
@@ -184,8 +195,6 @@ public final class NpcPlayerHelperImpl implements NpcPlayerHelper {
                 PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.e, npcPlayer);
                 p.b.sendPacket(packet);
             }
-            worldServer.getPlayers().removeIf(npc -> npc.getName().equals(p.getName()));
-            worldServer.getChunkProvider().removeEntity(p);
         }
     }
 
